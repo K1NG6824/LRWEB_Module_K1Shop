@@ -57,7 +57,7 @@ if(isset($_POST['db_check'])) {
 if( isset( $_POST['save_db'] ) ) {
     $Config = require ( SESSIONS . '/db.php');
 
-    $Config['lk'] = [['HOST' => $_POST['host'], 'USER' => $_POST['user'], 'PASS' => $_POST['pass'], 'DB' => [['DB' => $_POST['db_1'], 'Prefix' => [['table' => $_POST['table'], 'mod' => $_POST['lk_mod'], 'table_prefix' => $_POST['table_prefix']]]]]]];
+    $Config['lk'] = [['HOST' => $_POST['host'], 'USER' => $_POST['user'], 'PASS' => $_POST['pass'], 'DB' => [['DB' => $_POST['db_1'], 'Prefix' => [['table' => $_POST['table'], 'mod' => $_POST['lk_mod']]]]]]];
     file_put_contents( SESSIONS . 'db.php', '<?php return '.var_export_opt( $Config, true ).";" );
     header("Refresh:2");
 }
