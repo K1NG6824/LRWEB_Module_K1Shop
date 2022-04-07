@@ -3,7 +3,7 @@
   "info": "Возможность пополнения баланса на сервере.",
   "author": "SAPSAN 隼 modified by K1NG",
   "page": "lk",
-  "version": "0.4 (modified)",
+  "version": "0.4 (modified 2.0)",
   "required": {
     "core":"0.2","php":"5.4"
   },
