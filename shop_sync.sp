@@ -71,14 +71,21 @@ void DB_CreateTables()
 {
 	char s_Query[512];
 	FormatEx(s_Query, sizeof(s_Query), "CREATE TABLE IF NOT EXISTS `shop_player_sync` (\
-							`id` int PRIMARY KEY AUTO_INCREMENT ,\
+							`id` int NOT NULL AUTO_INCREMENT,\
 							`auth` varchar(22) NOT NULL,\
 							`name` varchar(64) NOT NULL,\
 							`gold` int NOT NULL DEFAULT '0',\
 							`all_gold` int NOT NULL DEFAULT '0',\
-						) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+							PRIMARY KEY (`id`)\
+						) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4");
 	g_hDatabase.Query(DB_OnPlayersTableLoad, s_Query, 1);
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		if(IsValidClient(i)) Shop_OnAuthorized(i);
+	}
 }
+
+
 
 public void DB_OnPlayersTableLoad(Database db, DBResultSet results, const char[] error, any data)
 {
@@ -118,7 +125,7 @@ public void SQL_Callback_SelectClient(Database hDatabase, DBResultSet hResults, 
 			{
 				char szQuery[PLATFORM_MAX_PATH], name[MAX_NAME_LENGTH];
 				GetClientName(iClient, name, MAX_NAME_LENGTH);
-				FormatEx(SZF(szQuery), "UPDATE `shop_player_sync` SET `gold` = 0 , `name` = 0 WHERE `id` = %i;", name, iIdAdd);
+				FormatEx(SZF(szQuery), "UPDATE `shop_player_sync` SET `gold` = 0 , `name` = '%s' WHERE `id` = %i;", name, iIdAdd);
 
 				DataPack hDataPack = new DataPack();
 
@@ -144,7 +151,7 @@ public void SQL_Callback_RemoveCredits(Database hDatabase, DBResultSet hResults,
 		LogError("SQL_Callback_RemoveCredits: %s", szError);
 		return;
 	}
-
+	
 	int iClient = CID(hDataPack.ReadCell());
 	if(iClient && hResults.AffectedRows)
 	{
@@ -172,8 +179,7 @@ public void SQL_Callback_CheckClient(Database hDatabase, DBResultSet hResults, c
 	int iClient = CID(hDataPack.ReadCell());
 	int iGolds = hDataPack.ReadCell();
 	delete hDataPack;
-
-	if(iClient && hResults.FetchInt(0) == 0)
+	if(iClient && hResults.FetchRow() && hResults.FetchInt(0) == 0)
 	{
 		char szAuth[32];
 		GetClientAuthId(iClient, AuthId_Engine, SZF(szAuth), true);
@@ -181,4 +187,11 @@ public void SQL_Callback_CheckClient(Database hDatabase, DBResultSet hResults, c
 		LogToFile(g_sLogFile, "Игроку %N (%s) было добавлено %d золота", iClient, szAuth, iGolds);
 		CGOPrintToChat(iClient, "%t", "SiteAddGold", iGolds);
 	}
+}
+
+bool IsValidClient(int iClient)
+{
+    if (!(1 <= iClient <= MaxClients) || !IsClientInGame(iClient) || IsFakeClient(iClient) || IsClientSourceTV(iClient) || IsClientReplay(iClient))
+        return false;
+    return true;
 }
