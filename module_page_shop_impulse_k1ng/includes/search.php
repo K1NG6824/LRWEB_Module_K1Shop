@@ -23,7 +23,12 @@ if( !isset( $_SESSION['user_admin'] ) || IN_LR != true ) { header('Location: ' .
                     <tr>
                         <?php if( $General->arr_general['avatars'] != 0 ) {?><th class="text-right tb-avatar"></th><?php }?>
                         <th class="text-left"><?php echo $Translate->get_translate_phrase('_Player') ?></th>
-                        <th class="text-left"><?php echo $Translate->get_translate_module_phrase('module_page_shop_impulse_k1ng', '_Balance') ?></th>
+                        <th class="text-left">                        <?php 
+                        if($Db->db_data['lk'][0]['mod'] == 3)
+                            echo $Translate->get_translate_module_phrase('module_page_shop_impulse_k1ng', '_BalanceAddK1');
+                        else
+                            echo $Translate->get_translate_module_phrase('module_page_shop_impulse_k1ng', '_Balance') ;
+                        ?></th>
                         <th class="text-left"><?php echo $Translate->get_translate_module_phrase('module_page_shop_impulse_k1ng', '_BalanceAllTime') ?></th>
                         <th></th>
                     </tr>
@@ -35,10 +40,15 @@ if( !isset( $_SESSION['user_admin'] ) || IN_LR != true ) { header('Location: ' .
                                 $cash = 'cash';
                                 $all_cash = 'cash';
                             }
-                            else if($Db->db_data['lk'][0]['mod'] == 2 || $Db->db_data['lk'][0]['mod'] == 3)
+                            else if($Db->db_data['lk'][0]['mod'] == 2)
                             {
                                 $cash = 'money';
                                 $all_cash = 'all_money';
+                            }
+                            else if($Db->db_data['lk'][0]['mod'] == 3)
+                            {
+                                $cash = 'gold';
+                                $all_cash = 'all_gold';
                             }
 
                         ?>
@@ -81,7 +91,7 @@ if( !isset( $_SESSION['user_admin'] ) || IN_LR != true ) { header('Location: ' .
 <?php if (!empty($_GET['user_edit'])): $user = $LK->LkGetUserData($_GET['user_edit']);$pays = $LK->LkGetUserPays($_GET['user_edit']);
     if($Db->db_data['lk'][0]['mod'] == 1)$cash = 'cash';
     else if($Db->db_data['lk'][0]['mod'] == 2)$cash = 'money';
-    else if($Db->db_data['lk'][0]['mod'] == 3)$cash = 'money';?>
+    else if($Db->db_data['lk'][0]['mod'] == 3)$cash = 'gold';?>
 <div class="col-md-7">
     <div class="card">
         <div class="card-header">
@@ -92,12 +102,16 @@ if( !isset( $_SESSION['user_admin'] ) || IN_LR != true ) { header('Location: ' .
             <form id="user_edit" data-default="true" enctype="multipart/form-data" method="post">
                     <input type="hidden" name="user" value="<?php echo $_GET['user_edit']?>">
                     <div class="input-form"><div class="input_text"><?php echo $Translate->get_translate_module_phrase('module_page_shop_impulse_k1ng','_Balance')?></div>
-                    <input type="hidden" name="old_balance" value="<?php echo $user[0][$cash]?>" >
-                    <input name="new_balance" value="<?php echo $user[0][$cash]?>" >
+                    <input type="hidden" name="old_balance" <?if($Db->db_data['lk'][0]['mod'] == 3) echo "disabled" ?> value="<?php echo $user[0][$cash]?>" >
+                    <input name="new_balance" <?if($Db->db_data['lk'][0]['mod'] == 3) echo "disabled" ?> value="<?php echo $user[0][$cash]?>" >
                 </div>
              </form>
+             <?if($Db->db_data['lk'][0]['mod'] != 3) 
+             {
+            ?>
             <input class="btn"  type="submit" form="user_edit" value="<?php echo $Translate->get_translate_module_phrase('module_page_shop_impulse_k1ng','_Save')?>">
             <br>
+            <? } ?>
             <div class="user_pays">
                 <?php if(!empty($pays)):?>
                     <table class="table table-hover">

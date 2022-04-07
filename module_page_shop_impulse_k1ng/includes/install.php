@@ -25,7 +25,7 @@ if(isset($Db->db_data['lk'])){
     else if($Db->db_data['lk'][0]['mod'] == 2)
         $tableLk = 'lk_system';
     else if($Db->db_data['lk'][0]['mod'] == 3)
-        $tableLk = 'shop_players';
+        $tableLk = 'shop_player_sync';
 
     $checkTable =  array(
         $tableLk,
@@ -71,7 +71,7 @@ if( isset( $_POST['table_install'] ) ) {
         else if($Db->db_data['lk'][0]['mod'] == 2)
             $tableLkCreate = "CREATE TABLE IF NOT EXISTS `lk_system` ( `auth` VARCHAR(64) NOT NULL , `name` VARCHAR(64) NOT NULL , `money` FLOAT NOT NULL , `all_money` FLOAT NOT NULL ) ENGINE = InnoDB CHARSET=utf8 COLLATE utf8_general_ci;";
         else if($Db->db_data['lk'][0]['mod'] == 3)
-            $tableLkCreate = "CREATE TABLE IF NOT EXISTS `shop_players` (`id` int NOT NULL AUTO_INCREMENT,`name` varchar(32) NOT NULL DEFAULT 'unknown',`auth` varchar(22) NOT NULL,`money` int NOT NULL,`add_money` int NOT NULL DEFAULT 0,`all_money` int NOT NULL DEFAULT 0,`credits` int NOT NULL DEFAULT 0,`shopkeys` int NOT NULL DEFAULT 0,`lastconnect` int, PRIMARY KEY (`id`), UNIQUE KEY `auth` (`auth`)) ENGINE = InnoDB CHARSET=utf8 COLLATE utf8_general_ci;";
+            $tableLkCreate = "CREATE TABLE IF NOT EXISTS `shop_player_sync` (`id` int NOT NULL AUTO_INCREMENT,`auth` varchar(22) NOT NULL, `name` VARCHAR(64) NOT NULL,`gold` int NOT NULL DEFAULT 0,`all_gold` int NOT NULL DEFAULT 0, PRIMARY KEY (`id`), UNIQUE KEY `auth` (`auth`)) ENGINE = InnoDB CHARSET=utf8 COLLATE utf8_general_ci;";
         
         $sql = array(
           $tableLkCreate,

@@ -36,18 +36,22 @@ class Lk_module{
 			{
         		$infoUser =$this->db->queryAll('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT cash FROM lk WHERE auth LIKE :auth LIMIT 1", $param);
         		$cash = 'cash';
+        		$balanceuser = number_format($infoUser[0][$cash],0,' ', ' ');
 			}
     		else if($this->db->db_data['lk'][0]['mod'] == 2)
     		{
         		$infoUser =$this->db->queryAll('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT money FROM lk_system WHERE auth LIKE :auth LIMIT 1", $param);
         		$cash = 'money';
+        		$balanceuser = number_format($infoUser[0][$cash],0,' ', ' ');
     		}
     		else if($this->db->db_data['lk'][0]['mod'] == 3)
     		{
-        		$infoUser =$this->db->queryAll('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT money FROM shop_players WHERE auth LIKE :auth LIMIT 1", $param);
-        		$cash = 'money';
+        		$infoUser =$this->db->queryAll('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT gold FROM shop_players WHERE auth LIKE :auth LIMIT 1", $param);
+        		$infoUserAdd =$this->db->queryAll('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT gold FROM shop_player_sync WHERE auth LIKE :auth LIMIT 1", $param);
+				$cash = 'gold';
+        		$balanceuser = number_format($infoUser[0][$cash]+$infoUserAdd[0][$cash],0,' ', ' ');
     		}
-			$this->Modules->set_user_info_text($this->Translate->get_translate_module_phrase('module_page_shop_impulse_k1ng','_Balance').': '.$this->Translate->get_translate_module_phrase('module_page_shop_impulse_k1ng','_AmountCourse').' <b class="material-balance">'.number_format($infoUser[0][$cash],0,' ', ' ').'</b>');
+			$this->Modules->set_user_info_text($this->Translate->get_translate_module_phrase('module_page_shop_impulse_k1ng','_Balance').': '.$this->Translate->get_translate_module_phrase('module_page_shop_impulse_k1ng','_AmountCourse').' <b class="material-balance">'.$balanceuser.'</b>');
 		}
 	}
 
@@ -58,7 +62,7 @@ class Lk_module{
 		else if($this->db->db_data['lk'][0]['mod'] == 2)
 			$allDonat = $this->db->queryNum('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT SUM(all_money) FROM lk_system");
 		else if($this->db->db_data['lk'][0]['mod'] == 3)
-			$allDonat = $this->db->queryNum('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT SUM(all_money) FROM shop_players");
+			$allDonat = $this->db->queryNum('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT SUM(all_gold) FROM shop_player_sync");
 		return number_format($allDonat[0],0,' ', ' ');
 	}
 
@@ -199,7 +203,7 @@ class Lk_module{
 		else if($this->db->db_data['lk'][0]['mod'] == 2)
 			return $this->db->queryAll('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT * FROM lk_system ORDER BY all_money DESC LIMIT $min, $max");
 		else if($this->db->db_data['lk'][0]['mod'] == 3)
-			return $this->db->queryAll('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT * FROM shop_players ORDER BY all_money DESC LIMIT $min, $max");
+			return $this->db->queryAll('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT * FROM shop_player_sync ORDER BY all_gold DESC LIMIT $min, $max");
 			
 	}
 
@@ -210,7 +214,7 @@ class Lk_module{
 		else if($this->db->db_data['lk'][0]['mod'] == 2)
 		return ceil($this->db->queryNum('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT COUNT(*) FROM lk_system")[0]/$max);
 		else if($this->db->db_data['lk'][0]['mod'] == 3)
-		return ceil($this->db->queryNum('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT COUNT(*) FROM shop_players")[0]/$max);
+		return ceil($this->db->queryNum('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT COUNT(*) FROM shop_player_sync")[0]/$max);
 
 	}
 
@@ -463,33 +467,45 @@ class Lk_module{
 		if(!preg_match('/^[0-9]{1,5}.[0-9]{1,2}$/', $this->WM($post['new_balance'])))
 				$this->message($this->Translate->get_translate_module_phrase('module_page_shop_impulse_k1ng','_AmountError'),'error');
 			$new_balance = $post['new_balance']-$post['old_balance'];
-		if($new_balance != 0){
-			$params = [	'order'		=> time() % 100000,
-						'auth'		=> $post['user'],
-						'summ'		=> $new_balance,
-						'data'		=> date('d.m.Y в H:i:s'),
-						'system'	=> 'admin'
-					];
-			$this->db->query('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "INSERT INTO `lk_pays` (`pay_order`, `pay_auth`, `pay_summ`, `pay_data`, `pay_system`, `pay_promo`, `pay_status`) VALUES($params[order],'$params[auth]',$params[summ],'$params[data]','$params[system]',' ',1)");
-			$this->Notifications->SendNotification( 
-			 	$post['user'],
-			 	'_AdminPay', 
-			 	['course'=>$this->Translate->get_translate_module_phrase('module_page_shop_impulse_k1ng','_AmountCourse'),'amount'=> $new_balance,'module_translation'=>'module_page_shop_impulse_k1ng'],
-			 	'lk/?section=payments#p'.$params['order'],
-			 	'money' );
+		if($this->db->db_data['lk'][0]['mod'] != 3)
+		{
+			if($new_balance != 0){
+				$params = [	'order'		=> time() % 100000,
+							'auth'		=> $post['user'],
+							'summ'		=> $new_balance,
+							'data'		=> date('d.m.Y в H:i:s'),
+							'system'	=> 'admin'
+						];
+	
+					$this->db->query('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "INSERT INTO `lk_pays` (`pay_order`, `pay_auth`, `pay_summ`, `pay_data`, `pay_system`, `pay_promo`, `pay_status`) VALUES($params[order],'$params[auth]',$params[summ],'$params[data]','$params[system]',' ',1)");
+				$this->Notifications->SendNotification( 
+					 $post['user'],
+					 '_AdminPay', 
+					 ['course'=>$this->Translate->get_translate_module_phrase('module_page_shop_impulse_k1ng','_AmountCourse'),'amount'=> $new_balance,'module_translation'=>'module_page_shop_impulse_k1ng'],
+					 'lk/?section=payments#p'.$params['order'],
+					 'money' );
+			}
+			$params = [
+					'auth' 		=> $post['user'],
+					'cash'		=> $post['new_balance'],
+				];
 		}
-		$params = [
-				'auth' 		=> $post['user'],
-				'cash'		=> $post['new_balance'],
-			];
 		if($this->db->db_data['lk'][0]['mod'] == 1)
+		{
 			$this->db->query('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "UPDATE lk SET cash = :cash WHERE auth = :auth",$params);
+			$this->message(LangValReplace($this->Translate->get_translate_module_phrase('module_page_shop_impulse_k1ng','_NewBalanceUser'),['user'=>$post['user']]),'success');
+		}
 		else if($this->db->db_data['lk'][0]['mod'] == 2)
+		{
 			$this->db->query('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "UPDATE lk_system SET money = :cash WHERE auth = :auth",$params);
-		else if($this->db->db_data['lk'][0]['mod'] == 3)
-			$this->db->query('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "UPDATE shop_players SET money = :cash WHERE auth = :auth",$params);
-			
-		$this->message(LangValReplace($this->Translate->get_translate_module_phrase('module_page_shop_impulse_k1ng','_NewBalanceUser'),['user'=>$post['user']]),'success');
+			$this->message(LangValReplace($this->Translate->get_translate_module_phrase('module_page_shop_impulse_k1ng','_NewBalanceUser'),['user'=>$post['user']]),'success');
+		}
+		
+		if($this->db->db_data['lk'][0]['mod'] == 3)
+		{
+			//$this->db->query('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "UPDATE shop_players SET money = :cash WHERE auth = :auth",$params);
+			$this->message($this->Translate->get_translate_module_phrase('module_page_shop_impulse_k1ng','_EditUserK1LK'),'error');
+		}
 	}
 
 	public function LkCleanLogs(){
@@ -594,8 +610,8 @@ class Lk_module{
 				if(empty($data[0]['status']))
 					$this->message(LangValReplace($this->Translate->get_translate_module_phrase('module_page_shop_impulse_k1ng','_GatwayOff'),['name'=>'FreeKassa']),'error');
 				$this->LKRegPay($order,$post,'Freekassa');
-				$sign = md5($data[0]['shop_id'].':'.$post['amount'].':'.$data[0]['secret_key_1'].':'.$order);
-				$this->location('http://www.free-kassa.ru/merchant/cash.php?m='.$data[0]['shop_id'].'&oa='.$post['amount'].'&o='.$order.'&s='.$sign.'&us_sign='.$lk_sign);
+				$sign = md5($data[0]['shop_id'].':'.$post['amount'].':'.$data[0]['secret_key_1'].':RUB:'.$order);
+			$this->location('https://pay.freekassa.ru/?m='.$data[0]['shop_id'].'&oa='.$post['amount'].'&i=&currency=RUB&o='.$order.'&s='.$sign.'&us_sign='.$lk_sign);
 				break;
 			case 'interkassa':
 				if(empty($data[0]['status']))
@@ -893,9 +909,9 @@ class Lk_module{
 			}
 			else if($this->db->db_data['lk'][0]['mod'] == 3)
 			{
-				$infoUser = $this->db->queryAll('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT * FROM shop_players WHERE auth LIKE :search ORDER BY all_money DESC LIMIT 0,20", $param);
+				$infoUser = $this->db->queryAll('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT * FROM shop_player_sync WHERE auth LIKE :search ORDER BY gold DESC LIMIT 0,20", $param);
 				if(empty($infoUser))
-						$infoUser = $this->db->queryAll('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT * FROM shop_players WHERE name LIKE :search ORDER BY all_money  DESC LIMIT 0,20", $param);
+					$infoUser = $this->db->queryAll('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT * FROM shop_player_sync WHERE name LIKE :search ORDER BY gold  DESC LIMIT 0,20", $param);
 			}
     		$_SESSION['search'] = $infoUser;
     		$this->location('lk/?section=search');

@@ -94,20 +94,19 @@ class Basefunction{
 		else if($this->db->db_data['lk'][0]['mod'] == 2)
 			$player = $this->db->query('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT * FROM lk_system WHERE auth LIKE :auth LIMIT 1", $param);
 		else if($this->db->db_data['lk'][0]['mod'] == 3)
-			$player = $this->db->query('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT * FROM shop_players WHERE auth LIKE :auth LIMIT 1", $param);
+			$player = $this->db->query('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "SELECT * FROM shop_player_sync WHERE auth LIKE :auth LIMIT 1", $param);
 		
 		if(empty($player)){
 			$params = [
 				'auth' 		=> $this->decod[3],
-				'name'		=> 'LR WEB - LK MODULE BY SAPSAN'
+				'name'		=> 'LK MODULE BY SAPSAN (K1NG)'
 			];
 			if($this->db->db_data['lk'][0]['mod'] == 1)
 				$this->db->query('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "INSERT INTO lk(auth, name, money, all_money) VALUES (:auth,:name,0,0)", $params);
 			else if($this->db->db_data['lk'][0]['mod'] == 2)
 				$this->db->query('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "INSERT INTO lk_system(auth, name, money, all_money) VALUES (:auth,:name,0,0)", $params);
 			else if($this->db->db_data['lk'][0]['mod'] == 3)
-				$this->db->query('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "INSERT INTO shop_players(auth, name, money, add_money, all_money) VALUES (:auth,:name, 0, 0, 0)", $params);
-			
+				$this->db->query('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "INSERT INTO shop_player_sync(auth, name) VALUES (:auth,:name)", $params);
 		}
 	}
 
@@ -249,7 +248,7 @@ class Basefunction{
 			else if($this->db->db_data['lk'][0]['mod'] == 2)
 				$this->db->query('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "UPDATE lk_system SET money = money + :money, all_money = all_money + :all_money WHERE auth LIKE :auth", $params);
 			else if($this->db->db_data['lk'][0]['mod'] == 3)
-				$this->db->query('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "UPDATE shop_players SET add_money = add_money + :money, all_money = all_money + :all_money WHERE auth LIKE :auth", $params);
+				$this->db->query('lk', $this->db->db_data['lk'][0]['USER_ID'], $this->db->db_data['lk'][0]['DB_num'], "UPDATE shop_player_sync SET gold = gold + :money, all_gold = all_gold + :all_money WHERE auth LIKE :auth", $params);
 	}
 
 	/**

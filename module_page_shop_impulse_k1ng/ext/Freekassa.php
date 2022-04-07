@@ -16,10 +16,8 @@ class Freekassa extends Basefunction{
 
 	public function FKCheckIP(){
 		if(!in_array($this->getIP(), array(
-						'136.243.38.147','136.243.38.147', 
-						'136.243.38.149', '136.243.38.150', 
-						'136.243.38.151', '136.243.38.189', 
-						'88.198.88.98',	'136.243.38.108',
+						'168.119.157.136','168.119.60.227', 
+						'138.201.88.124', '178.154.197.79',
 
 					))){
 				$this->LkAddLog('_DeniedIP', ['gateway' =>'FreeKassa', 'ip'=>$this->getIP()]);
